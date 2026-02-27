@@ -9,8 +9,24 @@ namespace MirrorWeapons
     [HarmonyPatch]
     internal static class CopyAndLockPatches
     {
+        static class CopyFixer<T> where T : GameDataBlockBase<T>
+        {
+            private static int s_counter = 0;
+
+            public static T CreateNewCopy(T block)
+            {
+                // Force unique names to prevent duplicate name errors in CreateNewCopy.
+                var oldName = block.name;
+                block.name = oldName + (++s_counter).ToString();
+                var copy = GameDataBlockBase<T>.CreateNewCopy(block);
+                block.name = oldName;
+                return copy;
+            }
+        }
+
         private static readonly Dictionary<uint, uint> _offlineCopies = new();
         private static readonly Dictionary<InventorySlot, (int pos, GearIDRange range)> _blockedGearRanges = new();
+
 
         [HarmonyPatch(typeof(GameDataInit), nameof(GameDataInit.Initialize))]
         [HarmonyWrapSafe]
@@ -44,7 +60,7 @@ namespace MirrorWeapons
 
                 if (!itemToCopy.TryGetValue(itemBlockID, out var copyItemID))
                 {
-                    var copyItem = ItemDataBlock.CreateNewCopy(itemBlock);
+                    var copyItem = CopyFixer<ItemDataBlock>.CreateNewCopy(itemBlock);
                     copyItem.inventorySlot = newSlot;
                     TrySetIDOffset(copyItem, itemBlockID);
                     itemToCopy.Add(itemBlockID, copyItemID = copyItem.persistentID);
@@ -52,13 +68,13 @@ namespace MirrorWeapons
 
                 if (!cateToCopy.TryGetValue(cateBlockID, out var copyCateID))
                 {
-                    var copyCate = GearCategoryDataBlock.CreateNewCopy(cateBlock);
+                    var copyCate = CopyFixer<GearCategoryDataBlock>.CreateNewCopy(cateBlock);
                     copyCate.BaseItem = copyItemID;
                     TrySetIDOffset(copyCate, cateBlockID);
                     cateToCopy.Add(cateBlockID, copyCateID = copyCate.persistentID);
                 }
 
-                var copyOffline = PlayerOfflineGearDataBlock.CreateNewCopy(offlineBlock);
+                var copyOffline = CopyFixer<PlayerOfflineGearDataBlock>.CreateNewCopy(offlineBlock);
                 string baseItemComp = GetCompString(eGearComponent.BaseItem);
                 string baseCateComp = GetCompString(eGearComponent.Category);
                 copyOffline.GearJSON = copyOffline.GearJSON.Replace(baseItemComp + itemBlockID, baseItemComp + copyItemID);

@@ -4,7 +4,7 @@ using HarmonyLib;
 
 namespace MirrorWeapons
 {
-    [BepInPlugin("Dinorush." + MODNAME, MODNAME, "1.0.0")]
+    [BepInPlugin("Dinorush." + MODNAME, MODNAME, "1.0.1")]
     internal sealed class EntryPoint : BasePlugin
     {
         public const string MODNAME = "MirrorWeapons";

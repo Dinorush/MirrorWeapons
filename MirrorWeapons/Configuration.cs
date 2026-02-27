@@ -13,8 +13,8 @@ namespace MirrorWeapons
         {
             ConfigFile configFile = new(Path.Combine(Paths.ConfigPath, EntryPoint.MODNAME + ".cfg"), saveOnInit: true);
             string section = "Developer Settings";
-            Offset = configFile.Bind(section, "ID Offset", Offset, "Offset from the original ID to create copied blocks at.\nIf there is an ID conflict, it is given the next consecutive ID after the last block instead.").Value;
-            LockDuplicate = configFile.Bind(section, "Lock Duplicate", LockDuplicate, "If a weapon is picked, its copy cannot be picked.\nDoesn't work properly for bots.").Value;
+            LockDuplicate = configFile.Bind(section, "Lock Duplicate", LockDuplicate, "If a weapon is picked, its copy in the other slot cannot be picked.\nDoesn't work properly for bots.").Value;
+            Offset = configFile.Bind(section, "ID Offset", Offset, "Offset from the original ID to create copied blocks with.\nUseful if you need to apply mod customization to specific IDs, giving you reliable copy IDs.").Value;
         }
     }
 }
